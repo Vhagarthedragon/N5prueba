@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='dashboard.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Bienvenido Oficial</h1>
+        <a href="/logout">Cerrar sesión</a>
+    </header>
+    <main class="container">
+        <section class="section">
+            <h2>Generar Informe</h2>
+            <form id="loginForm">
+                <input type="text" name="correo" placeholder="Correo del infractor" required>
+                <button type="submit">Generar Informe</button>
+            </form>
+        </section>
+        <section class="section" id="sectionTable" style="display: none;">
+            <h2>Informe de Infracciones</h2>
+            <table id="informeTable" >
+                <thead>
+                    <tr>
+                        <th>Nombre infractor</th>
+                        <th>Correo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="informeTableBody">
+                    <!-- Aquí se añadirán las filas dinámicamente -->
+                </tbody>
+            </table>
+            <table id="informeTable2" >
+                <thead>
+                    <tr>
+                        <th>ID Infracción</th>
+                        <th>Placa Patente</th>
+                        <th>Timestamp</th>
+                        <th>Comentarios</th>
+                    </tr>
+                </thead>
+                <tbody id="informeTableBody2">
+                    <!-- Aquí se añadirán las filas dinámicamente -->
+                </tbody>
+            </table>
+        </section>
+        <section class="section">
+            <h2>Oficiales</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Identificador</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for oficial in oficiales %}
+                        <tr>
+                            <td>{{ oficial.id }}</td>
+                            <td>{{ oficial.nombre }}</td>
+                            <td>{{ oficial.identificador }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <section class="section">
+            <h2>Personas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for persona in personas %}
+                        <tr>
+                            <td>{{ persona.id }}</td>
+                            <td>{{ persona.nombre }}</td>
+                            <td>{{ persona.correo }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <section class="section">
+            <h2>Vehículos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Placa Patente</th>
+                        <th>Marca</th>
+                        <th>Propietario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehiculo in vehiculos %}
+                        <tr>
+                            <td>{{ vehiculo.placa_patente }}</td>
+                            <td>{{ vehiculo.marca }}</td>
+                            <td>{{ vehiculo.propietario.nombre }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <section class="section">
+            <h2>Infracciones</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Placa Patente</th>
+                        <th>Timestamp</th>
+                        <th>Comentarios</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for infraccion in infracciones %}
+                        <tr>
+                            <td>{{ infraccion.placa_patente }}</td>
+                            <td>{{ infraccion.timestamp }}</td>
+                            <td>{{ infraccion.comentarios }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const correo = formData.get('correo');
+            const response = await fetch(`/generar_informe/?correo=${correo}`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const informeTableBody = document.getElementById("informeTableBody");
+                const informeTableBody2 = document.getElementById("informeTableBody2");
+
+                // Limpiar cualquier contenido previo en la tabla
+                sectionTable.style.display = "table"; // Mostrar la tabla
+                informeTableBody.innerHTML = "";
+                informeTableBody2.innerHTML = "";
+
+                // Iterar sobre cada objeto de infracción en el JSON y agregar una fila a la tabla para cada uno
+                data.forEach(item => {
+                    const infractor = item.infractor;
+                    const infracciones = item.infracciones;
+
+                    // Crear una fila para el infractor
+                    const infractorRow = document.createElement("tr");
+                    infractorRow.innerHTML = `
+                        <td>${infractor.nombre}</td>
+                        <td>${infractor.correo}</td>
+                        <td colspan="4"></td> <!-- Placeholder para fusionar celdas -->
+                    `;
+                    informeTableBody.appendChild(infractorRow);
+
+                    // Crear una fila para cada infracción del infractor
+                    infracciones.forEach(infraccion => {
+                        const infraccionRow = document.createElement("tr");
+                        infraccionRow.innerHTML = `
+                            <td>${infraccion.id}</td>
+                            <td>${infraccion.placa_patente}</td>
+                            <td>${infraccion.timestamp}</td>
+                            <td>${infraccion.comentarios}</td>
+                        `;
+                        informeTableBody2.appendChild(infraccionRow);
+                    });
+                });
+            } else {
+                alert("Error al generar el informe. Por favor, inténtalo de nuevo.");
+            }
+        });
+    </script>
+
+</body>
+</html>
