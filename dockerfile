@@ -19,4 +19,4 @@ RUN echo "el primer usuario tienes que crearlo directo en la bd"
 # Exponemos el puerto 80 para la aplicación FastAPI
 EXPOSE 80
 # Ejecutamos la aplicación FastAPI al iniciar el contenedor
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
